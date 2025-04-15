@@ -1,0 +1,28 @@
+{
+  "dependencies": {
+    "express": "^5.1.0"
+  },
+  "name": "y",
+  "version": "1.0.0",
+  "description": "food order and delivery system backend",
+  "main": "app.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IT22234148/Cloud-Food-Order-Delivery-System-Microservices.git"
+  },
+  "keywords": [
+    "food",
+    "order",
+    "delivery"
+  ],
+  "author": "Manuditha Perera",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/IT22234148/Cloud-Food-Order-Delivery-System-Microservices/issues"
+  },
+  "homepage": "https://github.com/IT22234148/Cloud-Food-Order-Delivery-System-Microservices#readme"
+}
