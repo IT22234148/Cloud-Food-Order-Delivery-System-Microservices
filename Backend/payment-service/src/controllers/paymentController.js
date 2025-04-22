@@ -3,7 +3,8 @@ const { createStripePaymentIntent } = require('../services/stripeService');
 
 // Card payment
 exports.initiateCardPayment = async (req, res) => {
-  const { orderId, userId, amount } = req.body;
+  const { orderId, amount } = req.body;
+  const userId = req.user.id;
 
   try {
     const paymentIntent = await createStripePaymentIntent(amount);
@@ -28,7 +29,8 @@ exports.initiateCardPayment = async (req, res) => {
 
 // COD
 exports.initiateCOD = async (req, res) => {
-  const { orderId, userId, amount } = req.body;
+  const { orderId, amount } = req.body;
+  const userId = req.user.id;
 
   try {
     const payment = new Payment({
@@ -51,6 +53,7 @@ exports.initiateCOD = async (req, res) => {
 // Confirm payment success (Stripe webhook will call this eventually in real)
 exports.confirmCardPayment = async (req, res) => {
   const { paymentIntentId } = req.body;
+  const userId = req.user.id;
 
   try {
     const payment = await Payment.findOne({ stripePaymentIntentId: paymentIntentId });

@@ -6,8 +6,10 @@ const {
   confirmCardPayment,
 } = require('../controllers/paymentController');
 
-router.post('/card', initiateCardPayment);
-router.post('/cod', initiateCOD);
-router.post('/confirm', confirmCardPayment);
+const protect = require('../middlewares/authMiddleware');
+
+router.post('/card', protect, initiateCardPayment);
+router.post('/cod', protect, initiateCOD);
+router.post('/confirm', protect, confirmCardPayment);
 
 module.exports = router;

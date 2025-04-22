@@ -1,0 +1,32 @@
+{
+    "name": "payment-service",
+    "version": "1.0.0",
+    "description": "Handles card and cash payments using Stripe for a food delivery platform",
+    "main": "src/app.js",
+    "scripts": {
+        "start": "node src/app.js",
+        "dev": "nodemon src/app.js"
+    },
+    "keywords": [
+        "stripe",
+        "payment",
+        "microservices",
+        "express",
+        "mongodb",
+        "cod"
+    ],
+    "author": "Your Name",
+    "license": "MIT",
+    "dependencies": {
+        "axios": "^1.6.7",
+        "cors": "^2.8.5",
+        "dotenv": "^16.4.5",
+        "express": "^4.18.4",
+        "jsonwebtoken": "^9.0.2",
+        "mongoose": "^7.6.3",
+        "stripe": "^12.5.0"
+    },
+    "devDependencies": {
+        "nodemon": "^3.1.0"
+    }
+}
