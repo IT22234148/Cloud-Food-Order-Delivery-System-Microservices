@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const restaurantController = require('../controllers/restaurant.controller');
-const { protect, authorizeRoles } = require('../../auth-service/middlewares/authMiddleware'); // Adjust path as needed
+const { protect, authorizeRoles } = require('../../auth-service/src/middlewares/authMiddleware'); // Adjust path as needed
 
 // Restaurant Owner routes (protected)
 router.post('/', protect, authorizeRoles('restaurant'), restaurantController.createRestaurant);
