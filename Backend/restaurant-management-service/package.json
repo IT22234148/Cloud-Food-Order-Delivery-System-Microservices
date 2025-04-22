@@ -1,0 +1,32 @@
+{
+  "name": "restaurant-management-service",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node restaurant-management-service-server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IT22234148/Cloud-Food-Order-Delivery-System-Microservices.git"
+  },
+  "keywords": [
+    "food",
+    "delivery"
+  ],
+  "author": "manuditha Perera",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/IT22234148/Cloud-Food-Order-Delivery-System-Microservices/issues"
+  },
+  "homepage": "https://github.com/IT22234148/Cloud-Food-Order-Delivery-System-Microservices#readme",
+  "description": "",
+  "dependencies": {
+    "cor": "^0.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.13.2"
+  }
+}
