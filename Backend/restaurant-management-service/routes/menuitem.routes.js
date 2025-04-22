@@ -1,14 +1,13 @@
-// routes/menuitem.routes.js
 const express = require('express');
 const router = express.Router();
 const menuItemController = require('../controllers/menuitem.controller');
-const authMiddleware = require('../middleware/auth.middleware');
+const { protect, authorizeRoles } = require('../../auth-service/middlewares/authMiddleware'); // Adjust path as needed
 
 // Restaurant Owner routes (protected)
-router.post('/', authMiddleware.authenticate, authMiddleware.authorize(['restaurant']), menuItemController.addMenuItem);
-router.put('/:id', authMiddleware.authenticate, authMiddleware.authorize(['restaurant']), menuItemController.updateMenuItem);
-router.delete('/:id', authMiddleware.authenticate, authMiddleware.authorize(['restaurant']), menuItemController.deleteMenuItem);
-router.get('/owner/all', authMiddleware.authenticate, authMiddleware.authorize(['restaurant']), menuItemController.getMenuItemsByOwner);
+router.post('/', protect, authorizeRoles('restaurant'), menuItemController.addMenuItem);
+router.put('/:id', protect, authorizeRoles('restaurant'), menuItemController.updateMenuItem);
+router.delete('/:id', protect, authorizeRoles('restaurant'), menuItemController.deleteMenuItem);
+router.get('/owner/all', protect, authorizeRoles('restaurant'), menuItemController.getMenuItemsByOwner);
 
 // Public route to get menu items by restaurant
 router.get('/restaurant/:restaurantId', menuItemController.getMenuItemsByRestaurant);
