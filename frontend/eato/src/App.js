@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import RegisterPage from "./pages/RegisterPage";
 import LoginPage from "./pages/LoginPage";
+import StripeCheckout from "./components/StripeCheckout";
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
       </nav> */}
 
       <Routes>
+        <Route path="/" element={<StripeCheckout />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
       </Routes>
