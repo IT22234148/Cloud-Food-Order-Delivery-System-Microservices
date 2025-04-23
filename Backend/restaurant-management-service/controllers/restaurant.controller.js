@@ -46,6 +46,17 @@ exports.getRestaurantByOwner = async (req, res) => {
   }
 };
 
+// Customer Role - Function to display all restaurants
+exports.getAllRestaurantsCustomer = async (req, res) => {
+  try {
+    // Optionally, you might want to filter for only verified restaurants
+    const restaurants = await Restaurant.find({ isVerified: true });
+    res.json(restaurants);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // Admin Role
 exports.getAllRestaurantsAdmin = async (req, res) => {
   try {
