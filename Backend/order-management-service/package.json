@@ -1,10 +1,10 @@
 {
   "name": "order-management-service",
   "version": "1.0.0",
-  "main": "server.js",
+  "main": "src/app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node order-management-service-server.js"
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js"
   },
   "repository": {
     "type": "git",
@@ -18,12 +18,14 @@
   "homepage": "https://github.com/IT22234148/Cloud-Food-Order-Delivery-System-Microservices#readme",
   "description": "",
   "dependencies": {
+    "axios": "^1.6.0",
     "cors": "^2.8.5",
-    "dotenv": "^16.5.0",
-    "dotnet": "^1.1.4",
-    "express": "^5.1.0",
-    "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.13.2",
-    "nodemon": "^3.1.9"
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.0",
+    "mongoose": "^7.0.4"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
   }
 }
