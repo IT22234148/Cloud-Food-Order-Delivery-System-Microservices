@@ -1,5 +1,4 @@
 import { useState, useEffect, createContext, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
 import API from '../api'; // Assuming your axios instance is in src/api.js
 
 const AuthContext = createContext(null);

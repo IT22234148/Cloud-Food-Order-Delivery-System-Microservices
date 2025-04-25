@@ -1,3 +1,4 @@
+// routes/restaurant.routes.js
 const express = require('express');
 const router = express.Router();
 const restaurantController = require('../controllers/restaurant.controller');
@@ -8,6 +9,9 @@ router.post('/', protect, authorizeRoles('restaurant'), restaurantController.cre
 router.get('/owner', protect, authorizeRoles('restaurant'), restaurantController.getRestaurantByOwner);
 router.put('/:id', protect, authorizeRoles('restaurant'), restaurantController.updateRestaurant);
 router.delete('/:id', protect, authorizeRoles('restaurant'), restaurantController.deleteRestaurant);
+
+// Customer route (public - to view all restaurants)
+router.get('/customer/all', restaurantController.getAllRestaurantsCustomer);
 
 // Admin routes (protected)
 router.get('/admin/all', protect, authorizeRoles('admin'), restaurantController.getAllRestaurantsAdmin);
