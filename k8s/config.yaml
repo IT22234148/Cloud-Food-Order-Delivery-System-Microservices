@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: food-delivery-config
+  namespace: food-delivery-system
+data:
+  mongodb-uri: "mongodb://mongodb:27017/foodDelivery" # Corrected URI
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: food-delivery-secrets
+  namespace: food-delivery-system
+type: Opaque
+data:
+  jwt-secret: eW91ci1zZWNyZXQta2V5 # Base64 encoded "your-secret-key"
