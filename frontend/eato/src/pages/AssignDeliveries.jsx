@@ -104,13 +104,33 @@ const AssignDeliveries = () => {
       const driverId = decoded.id;
 
       await assignDelivery(orderId, driverId, customerId, orderLocation);
+
+      const notificationResponse = await fetch('http://localhost:5003/notify/driver-assignment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: decoded.email,
+          phone: decoded.phone,
+          orderId,
+          pickupLocation: orderLocation,
+        }),
+      });
+
+      if (!notificationResponse.ok) {
+        const errorData = await notificationResponse.json();
+        throw new Error(errorData.error || 'Failed to send notification');
+      }
+
       setSuccess('🚚 Delivery assigned successfully!');
       setError('');
       setOrderId('');
       setCustomerId('');
       setOrderLocation('');
-    } catch {
-      setError('❌ Failed to assign delivery');
+    } catch (error) {
+      console.error('Error:', error.message);
+      setError(`❌ ${error.message}`);
       setSuccess('');
     }
   };
