@@ -1,51 +1,105 @@
+import mongoose from 'mongoose';
 import Delivery from '../models/Delivery.js';
-import { notifyCustomer, notifyDriver } from '../utils/notify.js';
+import Driver from '../models/Driver.js';
+import PendingDelivery from '../models/PendingDelivery.js';
 
-export async function assignDelivery(req, res) {
-  const { orderId, deliveryAddress } = req.body;
+export const assignDelivery = async (req, res) => {
+  if (req.user.role !== 'delivery') {
+    return res.status(403).json({ error: 'Access denied' });
+  }
+  const { orderId, customerId, orderLocation } = req.body;
+  if (!orderId || !customerId || !orderLocation) {
+    return res.status(400).json({ error: 'Missing orderId, customerId, or orderLocation' });
+  }
+  try {
+    // Find the first available driver
+    const nearestDriver = await Driver.findOne({ driverAvailability: true });
 
-  // Mock: Get first available driver (in real app, use availability check)
-  const driverId = "DRV" + Math.floor(Math.random() * 1000);
+    if (!nearestDriver) {
+      console.warn('No available drivers found. Adding delivery to the pending queue.');
+      const pendingDelivery = new PendingDelivery({ orderId, customerId, orderLocation });
+      await pendingDelivery.save();
+      return res.status(202).json({
+        message: 'No available drivers. Your delivery has been added to the pending queue.',
+      });
+    }
 
-  const delivery = new Delivery({
-    deliveryId: "DEL" + Math.floor(Math.random() * 10000),
-    orderId,
-    assignedDriverId: driverId,
-    status: "ASSIGNED",
-    deliveryAddress,
-    deliveryTime: new Date()
-  });
+    // Ensure the driverId is correctly retrieved
+    const driverId = nearestDriver.driverId;
+    if (!driverId) {
+      return res.status(500).json({ error: 'Driver ID is missing for the selected driver' });
+    }
 
-  await delivery.save();
-  notifyDriver(driverId, orderId);
+    // Assign the delivery to the nearest driver
+    const delivery = new Delivery({
+      orderId,
+      customerId,
+      driverId,
+      status: 'Assigned',
+      currentLocation: orderLocation,
+    });
+    await delivery.save();
 
-  res.status(200).json(delivery);
-}
+    // Update driver availability
+    nearestDriver.driverAvailability = false;
+    await nearestDriver.save();
 
-export async function updateDelivery(req, res) {
-  const { orderId } = req.params;
-  const { status } = req.body;
+    res.status(201).json(delivery);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
 
-  const delivery = await Delivery.findOne({ orderId });
-  if (!delivery) return res.status(404).send('Not found');
+export const updateDelivery = async (req, res) => {
+  if (req.user.role !== 'delivery') {
+    return res.status(403).json({ error: 'Access denied' });
+  }
+  try {
+    const delivery = await Delivery.findOneAndUpdate(
+      { orderId: req.params.id },
+      { ...req.body, updatedAt: Date.now() },
+      { new: true }
+    );
+    if (!delivery) return res.status(404).json({ error: 'Delivery not found' });
 
-  delivery.status = status;
-  await delivery.save();
+    // Reset driver availability if the delivery is marked as delivered
+    if (req.body.status === 'delivered') {
+      await Driver.findOneAndUpdate(
+        { driverId: delivery.driverId },
+        { driverAvailability: true }
+      );
+    }
 
-  notifyCustomer(orderId, status);
-  res.status(200).json({ message: "Updated", delivery });
-}
+    res.json(delivery);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
 
-export async function getStatus(req, res) {
-  const { orderId } = req.params;
-  const delivery = await Delivery.findOne({ orderId });
-  if (!delivery) return res.status(404).send('Not found');
+export const getDelivery = async (req, res) => {
+  try {
+    const delivery = await Delivery.findOne({ orderId: req.params.id });
+    if (!delivery) return res.status(404).json({ error: 'Delivery not found' });
 
-  res.status(200).json(delivery);
-}
+    // Ensure customers can only access their own orders
+    if (req.user.role === 'customer' && delivery.customerId !== req.user.id) {
+      return res.status(403).json({ error: 'Access denied to this order' });
+    }
 
-export async function getDriverDeliveries(req, res) {
-  const { driverId } = req.params;
-  const deliveries = await Delivery.find({ assignedDriverId: driverId });
-  res.status(200).json(deliveries);
-}
+    res.json(delivery);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const getDeliveriesByDriver = async (req, res) => {
+  if (req.user.role !== 'delivery') {
+    return res.status(403).json({ error: 'Access denied' });
+  }
+  try {
+    const deliveries = await Delivery.find({ driverId: req.params.driverId });
+    res.json(deliveries);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};

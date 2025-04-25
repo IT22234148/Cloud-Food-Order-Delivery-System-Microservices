@@ -11,11 +11,15 @@ function LoginForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("Submitting login form:", form); // Debugging log
     try {
       const res = await API.post("/login", form);
+      console.log("Login response:", res.data); // Debugging log
       localStorage.setItem("token", res.data.token);
       setMsg("Login successful!");
+      navigate("/dashboard"); // Navigate to Dashboard after login
     } catch (err) {
+      console.error("Login error:", err.response?.data || err.message); // Debugging log
       setMsg(err.response?.data?.msg || "Login failed.");
     }
   };

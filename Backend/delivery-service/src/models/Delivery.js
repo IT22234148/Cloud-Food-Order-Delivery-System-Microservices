@@ -1,16 +1,18 @@
 import mongoose from 'mongoose';
 
-const deliverySchema = new mongoose.Schema({
-  deliveryId: String,
-  orderId: String,
-  assignedDriverId: String,
-  status: {
-    type: String,
-    enum: ['ASSIGNED', 'ACCEPTED', 'PICKED_UP', 'DELIVERED'],
-    default: 'ASSIGNED'
+const DeliverySchema = new mongoose.Schema({
+  orderId: { type: String, required: true },
+  driverId: { type: String, required: true },
+  customerId: { type: String, required: true }, // Add customerId field
+  status: { type: String, enum: ['Assigned', 'In_transit', 'Delivered'], default: 'assigned' },
+  currentLocation: { type: String }, // Change to string for normal location
+  updatedAt: { type: Date, default: Date.now },
+  driverAvailability: { type: Boolean, default: true }, // Track driver availability
+  driverLocation: {
+    lat: Number,
+    lng: Number,
   },
-  deliveryAddress: String,
-  deliveryTime: Date
-}, { timestamps: true });
+});
 
-export default mongoose.model('Delivery', deliverySchema);
+const Delivery = mongoose.model('Delivery', DeliverySchema);
+export default Delivery;

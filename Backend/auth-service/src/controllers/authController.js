@@ -21,16 +21,25 @@ exports.register = async (req, res) => {
 
 exports.login = async (req, res) => {
   const { email, password } = req.body;
+  console.log("Login request received:", { email, password }); // Debugging log
 
   try {
     const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ msg: 'Invalid credentials' });
+    if (!user) {
+      console.error("User not found for email:", email); // Debugging log
+      return res.status(400).json({ msg: 'Invalid credentials' });
+    }
 
     const isMatch = await comparePassword(password, user.password);
-    if (!isMatch) return res.status(400).json({ msg: 'Invalid credentials' });
+    if (!isMatch) {
+      console.error("Password mismatch for email:", email); // Debugging log
+      return res.status(400).json({ msg: 'Invalid credentials' });
+    }
 
+    console.log("User authenticated:", user); // Debugging log
     res.json({ token: generateToken(user) });
   } catch (err) {
+    console.error("Login server error:", err.message); // Debugging log
     res.status(500).json({ msg: 'Server error', error: err.message });
   }
 };
