@@ -16,26 +16,38 @@ function EditRestaurant() {
   const navigate = useNavigate();
   const { auth, user } = useAuth();
 
-  if (!auth || user?.role !== 'restaurant') {
-    return <div>Unauthorized to access this page.</div>;
-  }
-
+  // Always call useEffect at the top level, regardless of conditions
   useEffect(() => {
+    if (!auth || user?.role !== 'restaurant') {
+      return; // Early return if unauthorized, but still run the useEffect
+    }
+
     const fetchRestaurant = async () => {
       setLoading(true);
       setError('');
       try {
         const response = await API.get(`/restaurants/${id}`);
-        setFormData(response.data);
+        setFormData({
+          name: response.data.name || '',
+          address: response.data.address || '',
+          cuisine: response.data.cuisine || '',
+        });
       } catch (err) {
-        setError(err.response?.data?.message || 'Failed to fetch restaurant details.');
+        setError(
+          err?.response?.data?.message ||
+          'Failed to fetch restaurant details. Please try again later.'
+        );
       } finally {
         setLoading(false);
       }
     };
 
     fetchRestaurant();
-  }, [id]);
+  }, [id, auth, user]);
+
+  if (!auth || user?.role !== 'restaurant') {
+    return <div>Unauthorized to access this page.</div>;
+  }
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -48,7 +60,9 @@ function EditRestaurant() {
       setMessage('Restaurant updated successfully!');
       navigate('/restaurant/dashboard');
     } catch (err) {
-      setMessage(err.response?.data?.message || 'Failed to update restaurant.');
+      setMessage(
+        err?.response?.data?.message || 'Failed to update restaurant. Please try again.'
+      );
     }
   };
 
@@ -63,7 +77,7 @@ function EditRestaurant() {
   return (
     <div>
       <h2>Edit Restaurant</h2>
-      {message && <p>{message}</p>}
+      {message && <p style={{ color: message.includes('Failed') ? 'red' : 'green' }}>{message}</p>}
       <form onSubmit={handleSubmit}>
         <div>
           <label htmlFor="name">Name:</label>

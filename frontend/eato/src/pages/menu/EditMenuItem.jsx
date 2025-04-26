@@ -17,12 +17,13 @@ function EditMenuItem() {
   const navigate = useNavigate();
   const { auth, user } = useAuth();
 
-  if (!auth || user?.role !== 'restaurant') {
-    return <div>Unauthorized to access this page.</div>;
-  }
-
+  // useEffect must be unconditional
   useEffect(() => {
     const fetchMenuItem = async () => {
+      if (!auth || user?.role !== 'restaurant') {
+        return; // skip fetching if unauthorized
+      }
+
       setLoading(true);
       setError('');
       try {
@@ -36,7 +37,12 @@ function EditMenuItem() {
     };
 
     fetchMenuItem();
-  }, [id]);
+  }, [id, auth, user]);
+
+  // After hooks, you can conditionally return
+  if (!auth || user?.role !== 'restaurant') {
+    return <div>Unauthorized to access this page.</div>;
+  }
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -64,7 +70,7 @@ function EditMenuItem() {
   return (
     <div>
       <h2>Edit Menu Item</h2>
-      {message && <p>{message}</p>}
+      {message && <p style={{ color: message.includes('Failed') ? 'red' : 'green' }}>{message}</p>}
       <form onSubmit={handleSubmit}>
         <div>
           <label htmlFor="name">Name:</label>
