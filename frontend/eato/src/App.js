@@ -2,6 +2,17 @@ import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import RegisterPage from "./pages/RegisterPage";
 import LoginPage from "./pages/LoginPage";
 import StripeCheckout from "./components/StripeCheckout";
+import { AuthProvider } from './hooks/useAuth';
+import ProtectedRoute from './components/ProtectedRoute';
+import RestaurantDashboard from './pages/restaurant/RestaurantDashboard';
+import AddRestaurant from './pages/restaurant/AddRestaurant';
+import EditRestaurant from './pages/restaurant/EditRestaurant';
+import RestaurantListAdmin from './pages/restaurant/RestaurantListAdmin';
+import UnauthorizedPage from './pages/UnauthorizedPage';
+import ManageMenuItems from './pages/menu/ManageMenuItems';
+import AddMenuItem from './pages/menu/AddMenuItem';
+import EditMenuItem from './pages/menu/EditMenuItem';
+import MenuItemList from './pages/menu/MenuItemList'; // For public view
 
 function App() {
   return (
@@ -12,9 +23,9 @@ function App() {
       </nav> */}
 
       <Routes>
-        <Route path="/" element={<StripeCheckout />} />
-        <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/payment" element={<StripeCheckout />} />
       </Routes>
     </Router>
   );
