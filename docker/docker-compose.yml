@@ -34,7 +34,7 @@ services:
     build: ../Backend/order-management-service
     container_name: order-service
     ports:
-      - "5002:5002"
+      - "5005:5005"
     environment:
       - MONGO_URI=mongodb://mongo:27017/fooddelivery
       - JWT_SECRET=supersecretkey
@@ -51,7 +51,7 @@ services:
     build: ../Backend/delivery-service
     container_name: delivery-service
     ports:
-      - "5003:5003"
+      - "5002:5002"
     environment:
       - MONGO_URI=mongodb+srv://cloudfood_user:y7PvxlDxpZwMfXVx@cluster0.sepzjhs.mongodb.net/delivery-service
       - JWT_SECRET=supersecretkey
@@ -76,7 +76,7 @@ services:
     build: ../Backend/notifications-service
     container_name: notifications-service
     ports:
-      - "5005:5005"
+      - "5003:5003"
     environment:
       - EMAIL_USER=sharshithab2021@gmail.com
       - EMAIL_PASS=mqqt tago vfyj rxcm

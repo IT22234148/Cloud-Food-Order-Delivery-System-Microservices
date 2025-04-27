@@ -17,11 +17,13 @@ function EditMenuItem() {
   const navigate = useNavigate();
   const { auth, user } = useAuth();
 
-  if (!auth || user?.role !== 'restaurant') {
-    return <div>Unauthorized to access this page.</div>;
-  }
-
   useEffect(() => {
+    if (!auth || user?.role !== 'restaurant') {
+      setError('Unauthorized to access this page.');
+      setLoading(false);
+      return;
+    }
+
     const fetchMenuItem = async () => {
       setLoading(true);
       setError('');
@@ -36,7 +38,7 @@ function EditMenuItem() {
     };
 
     fetchMenuItem();
-  }, [id]);
+  }, [auth, id, user]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
