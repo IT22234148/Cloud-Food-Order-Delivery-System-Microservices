@@ -20,7 +20,7 @@ export default (req, res, next) => {
 
     // Restrict other routes to the 'delivery' role
     if (req.user.role !== 'delivery') {
-      console.error(`Access denied for role: ${req.user.role}`);
+      console.error(`Access denied for role: ${req.user.role}`); // Debugging log
       return res.status(403).json({ error: 'Access denied' });
     }
 

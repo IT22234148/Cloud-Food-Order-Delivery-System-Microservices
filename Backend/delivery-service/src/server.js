@@ -29,22 +29,25 @@ app.use('/api/delivery', deliveryRoutes);
 
 // Seed initial driver data (optional)
 const seedDrivers = async () => {
-  const drivers = [
-    { name: 'Driver 1', driverId: 'DR001', driverAvailability: true, driverLocation: { type: 'Point', coordinates: [-74.0060, 40.7128] } },
-    { name: 'Driver 2', driverId: 'DR002', driverAvailability: true, driverLocation: { type: 'Point', coordinates: [-118.2437, 34.0522] } },
-    { name: 'Driver 3', driverId: 'DR003', driverAvailability: true, driverLocation: { type: 'Point', coordinates: [-87.6298, 41.8781] } },
-    { name: 'Driver 4', driverId: 'DR004', driverAvailability: true, driverLocation: { type: 'Point', coordinates: [-95.3698, 29.7604] } },
-    { name: 'Driver 5', driverId: 'DR005', driverAvailability: true, driverLocation: { type: 'Point', coordinates: [-122.4194, 37.7749] } },
-    { name: 'Driver 6', driverId: 'DR006', driverAvailability: true, driverLocation: { type: 'Point', coordinates: [-71.0589, 42.3601] } },
-    { name: 'Driver 7', driverId: 'DR007', driverAvailability: true, driverLocation: { type: 'Point', coordinates: [-80.1918, 25.7617] } },
-    { name: 'Driver 8', driverId: 'DR008', driverAvailability: true, driverLocation: { type: 'Point', coordinates: [-112.0740, 33.4484] } },
-    { name: 'Driver 9', driverId: 'DR009', driverAvailability: true, driverLocation: { type: 'Point', coordinates: [-104.9903, 39.7392] } },
-    { name: 'Driver 10', driverId: 'DR010', driverAvailability: true, driverLocation: { type: 'Point', coordinates: [-77.0369, 38.9072] } }
-  ];
-
-  // Clear existing drivers and seed new ones
-  await Driver.deleteMany({});
-  await Driver.insertMany(drivers);
+  try {
+    const drivers = [
+      { name: 'Driver 1', driverId: 'DR001', driverAvailability: true, driverLocation: { type: 'Point', coordinates: [-74.0060, 40.7128] } },
+      { name: 'Driver 2', driverId: 'DR002', driverAvailability: true, driverLocation: { type: 'Point', coordinates: [-118.2437, 34.0522] } },
+      { name: 'Driver 3', driverId: 'DR003', driverAvailability: true, driverLocation: { type: 'Point', coordinates: [-87.6298, 41.8781] } },
+      { name: 'Driver 4', driverId: 'DR004', driverAvailability: true, driverLocation: { type: 'Point', coordinates: [-95.3698, 29.7604] } },
+      { name: 'Driver 5', driverId: 'DR005', driverAvailability: true, driverLocation: { type: 'Point', coordinates: [-122.4194, 37.7749] } },
+      { name: 'Driver 6', driverId: 'DR006', driverAvailability: true, driverLocation: { type: 'Point', coordinates: [-71.0589, 42.3601] } },
+      { name: 'Driver 7', driverId: 'DR007', driverAvailability: true, driverLocation: { type: 'Point', coordinates: [-80.1918, 25.7617] } },
+      { name: 'Driver 8', driverId: 'DR008', driverAvailability: true, driverLocation: { type: 'Point', coordinates: [-112.0740, 33.4484] } },
+      { name: 'Driver 9', driverId: 'DR009', driverAvailability: true, driverLocation: { type: 'Point', coordinates: [-104.9903, 39.7392] } },
+      { name: 'Driver 10', driverId: 'DR010', driverAvailability: true, driverLocation: { type: 'Point', coordinates: [-77.0369, 38.9072] } }
+    ];
+    await Driver.deleteMany({});
+    await Driver.insertMany(drivers);
+    console.log('Driver data seeded successfully');
+  } catch (err) {
+    console.error('Error seeding driver data:', err);
+  }
 };
 seedDrivers();
 

@@ -4,17 +4,18 @@ import Driver from '../models/Driver.js';
 import PendingDelivery from '../models/PendingDelivery.js';
 
 export const assignDelivery = async (req, res) => {
+  console.log('Assign delivery request received:', req.body); // Debugging log
   if (req.user.role !== 'delivery') {
+    console.error('Access denied: User role is not delivery'); // Debugging log
     return res.status(403).json({ error: 'Access denied' });
   }
   const { orderId, customerId, orderLocation } = req.body;
   if (!orderId || !customerId || !orderLocation) {
+    console.error('Missing required fields:', req.body); // Debugging log
     return res.status(400).json({ error: 'Missing orderId, customerId, or orderLocation' });
   }
   try {
-    // Find the first available driver
     const nearestDriver = await Driver.findOne({ driverAvailability: true });
-
     if (!nearestDriver) {
       console.warn('No available drivers found. Adding delivery to the pending queue.');
       const pendingDelivery = new PendingDelivery({ orderId, customerId, orderLocation });
@@ -24,28 +25,22 @@ export const assignDelivery = async (req, res) => {
       });
     }
 
-    // Ensure the driverId is correctly retrieved
-    const driverId = nearestDriver.driverId;
-    if (!driverId) {
-      return res.status(500).json({ error: 'Driver ID is missing for the selected driver' });
-    }
-
-    // Assign the delivery to the nearest driver
     const delivery = new Delivery({
       orderId,
       customerId,
-      driverId,
+      driverId: nearestDriver.driverId,
       status: 'Assigned',
       currentLocation: orderLocation,
     });
     await delivery.save();
 
-    // Update driver availability
     nearestDriver.driverAvailability = false;
     await nearestDriver.save();
 
+    console.log('Delivery assigned successfully:', delivery); // Debugging log
     res.status(201).json(delivery);
   } catch (err) {
+    console.error('Error assigning delivery:', err.message); // Debugging log
     res.status(500).json({ error: err.message });
   }
 };

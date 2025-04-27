@@ -4,7 +4,7 @@ const DeliverySchema = new mongoose.Schema({
   orderId: { type: String, required: true },
   driverId: { type: String, required: true },
   customerId: { type: String, required: true }, // Add customerId field
-  status: { type: String, enum: ['Assigned', 'In_transit', 'Delivered'], default: 'assigned' },
+  status: { type: String, enum: ['Assigned', 'In_transit', 'Delivered'], default: 'Assigned' },
   currentLocation: { type: String }, // Change to string for normal location
   updatedAt: { type: Date, default: Date.now },
   driverAvailability: { type: Boolean, default: true }, // Track driver availability
