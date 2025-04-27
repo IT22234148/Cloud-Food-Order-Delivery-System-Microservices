@@ -14,7 +14,6 @@ import EditMenuItem from './pages/menu/EditMenuItem';
 import MenuItemList from './pages/menu/MenuItemList'; // For public view
 import CustomerRestaurantList from './pages/restaurant/CustomerRestaurantList';
 import React, { useState } from 'react';
-import Login from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
 import TrackOrder from './pages/TrackOrder';
 import AssignDeliveries from './pages/AssignDeliveries';
