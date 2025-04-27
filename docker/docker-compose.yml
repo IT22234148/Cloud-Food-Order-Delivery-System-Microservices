@@ -3,7 +3,6 @@ version: '3.8'
 services:
   auth-service:
     build: ../Backend/auth-service
-
     container_name: auth-service
     ports:
       - "5000:5000"
@@ -40,7 +39,7 @@ services:
       - MONGO_URI=mongodb://mongo:27017/fooddelivery
       - JWT_SECRET=supersecretkey
       - RESTAURANT_SERVICE_URL=http://restaurant-service:5001/api/restaurants
-      - PAYMENT_SERVICE_URL=http://payment-service:5003/api/payments
+      - PAYMENT_SERVICE_URL=http://payment-service:5004/api/payments
     depends_on:
       - mongo
       - auth-service
@@ -52,7 +51,7 @@ services:
     build: ../Backend/delivery-service
     container_name: delivery-service
     ports:
-      - "5002:5002"
+      - "5003:5003"
     environment:
       - MONGO_URI=mongodb+srv://cloudfood_user:y7PvxlDxpZwMfXVx@cluster0.sepzjhs.mongodb.net/delivery-service
       - JWT_SECRET=supersecretkey
@@ -62,38 +61,6 @@ services:
     networks:
       - food-delivery-network
 
-  restaurant-service:
-    build: ../Backend/restaurant-management-service
-    container_name: restaurant-service
-    ports:
-      - "5001:5001"
-    environment:
-      - MONGO_URI=mongodb://mongo:27017/fooddelivery
-      - JWT_SECRET=supersecretkey
-      - AUTH_SERVICE_URL=http://auth-service:5000/api/auth
-    depends_on:
-      - mongo
-      - auth-service
-    networks:
-      - food-delivery-network
-
-  order-service:
-    build: ../Backend/order-management-service
-    container_name: order-service
-    ports:
-      - "5002:5002"
-    environment:
-      - MONGO_URI=mongodb://mongo:27017/fooddelivery
-      - JWT_SECRET=supersecretkey
-      - RESTAURANT_SERVICE_URL=http://restaurant-service:5001/api/restaurants
-      - PAYMENT_SERVICE_URL=http://payment-service:5003/api/payments
-    depends_on:
-      - mongo
-      - auth-service
-      - restaurant-service
-    networks:
-      - food-delivery-network
-
   payment-service:
     build: ../Backend/payment-service
     container_name: payment-service
@@ -102,15 +69,19 @@ services:
     environment:
       - MONGO_URI=mongodb+srv://udaraireshan:udaraireshan@cluster0.zd454dh.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
       - STRIPE_SECRET_KEY=your_stripe_secret_key
+    networks:
+      - food-delivery-network
 
   notifications-service:
     build: ../Backend/notifications-service
     container_name: notifications-service
     ports:
-      - "5003:5003"
+      - "5005:5005"
     environment:
       - EMAIL_USER=sharshithab2021@gmail.com
       - EMAIL_PASS=mqqt tago vfyj rxcm
+    networks:
+      - food-delivery-network
 
   frontend:
     build: ../frontend/eato
@@ -123,36 +94,8 @@ services:
     depends_on:
       - auth-service
       - delivery-service
-
-  payment-service:
-    build: ../Backend/payment-service
-    container_name: payment-service
-    ports:
-      - "5004:5004"
-    environment:
-      - MONGO_URI=mongodb+srv://udaraireshan:udaraireshan@cluster0.zd454dh.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
-      - STRIPE_SECRET_KEY=your_stripe_secret_key
-
-  notifications-service:
-    build: ../Backend/notifications-service
-    container_name: notifications-service
-    ports:
-      - "5003:5003"
-    environment:
-      - EMAIL_USER=sharshithab2021@gmail.com
-      - EMAIL_PASS=mqqt tago vfyj rxcm
-
-  frontend:
-    build: ../frontend/eato
-    container_name: frontend
-    ports:
-      - "3000:80" # Map port 3000 on the host to port 80 in the container
-    environment:
-      - REACT_APP_AUTH_API=http://localhost:5000/api/auth
-      - REACT_APP_BASE_URL=http://localhost:5002/api
-    depends_on:
-      - auth-service
-      - delivery-service
+    networks:
+      - food-delivery-network
 
   mongo:
     image: mongo:6
