@@ -15,37 +15,116 @@ services:
     networks:
       - food-delivery-network
 
-  restaurant-service:
-    build: ../Backend/restaurant-management-service
-    container_name: restaurant-service
+# Frontend Service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.simple
     ports:
-      - "5001:5001"
-    environment:
-      - MONGO_URI=mongodb://mongo:27017/fooddelivery
-      - JWT_SECRET=supersecretkey
-      - AUTH_SERVICE_URL=http://auth-service:5000/api/auth
+      - "3000:3000"
     depends_on:
-      - mongo
-      - auth-service
+      order-service:
+        condition: service_healthy
+      auth-service:
+        condition: service_healthy
+      restaurant-service:
+        condition: service_healthy
+      notification-service:
+        condition: service_healthy
+    environment:
+      - REACT_APP_ORDER_SERVICE_URL=http://localhost:3003
+      - REACT_APP_AUTH_SERVICE_URL=http://localhost:3001
+      - REACT_APP_RESTAURANT_SERVICE_URL=http://localhost:3002
+      - REACT_APP_NOTIFICATION_SERVICE_URL=http://localhost:3006
+      - DOCKER_CONTAINER=true
+      - NODE_ENV=development
+      - WDS_SOCKET_PORT=0
     networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+ # Order Service
+  order-service:
+    build: 
+      context: ./backend/order-service
+      dockerfile: Dockerfile
+    ports:
+      - "3003:3003"
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      - PORT=3003
+      - MONGO_URI=mongodb+srv://dbLasitha:dbUser123@cluster0.d3qam.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+      - JWT_SECRET=f00d0rd3r1ngSyst3mS3cr3tK3y2025
+      - NODE_ENV=development
+      - AUTH_SERVICE_URL=http://auth-service:3001
+      - NOTIFICATION_SERVICE_URL=http://notification-service:3006
+      - SERVICE_API_KEY=f00d0rd3r1ngSyst3mS3rv1c3K3y2025
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3003"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
       - food-delivery-network
 
-  order-service:
-    build: ../Backend/order-management-service
-    container_name: order-service
+   # Restaurant Service
+  restaurant-service:
+    build: 
+      context: ./backend/restaurant-service
+      dockerfile: Dockerfile
     ports:
-      - "5002:5002"
-    environment:
-      - MONGO_URI=mongodb://mongo:27017/fooddelivery
-      - JWT_SECRET=supersecretkey
-      - RESTAURANT_SERVICE_URL=http://restaurant-service:5001/api/restaurants
-      - PAYMENT_SERVICE_URL=http://payment-service:5003/api/payments
+      - "3002:3002"
     depends_on:
-      - mongo
-      - auth-service
-      - restaurant-service
+      redis:
+        condition: service_healthy
+    environment:
+      - PORT=3002
+      - MONGO_URI=mongodb+srv://dbLasitha:dbUser123@cluster0.d3qam.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+      - JWT_SECRET=f00d0rd3r1ngSyst3mS3cr3tK3y2025
+      - NODE_ENV=development
+      - AUTH_SERVICE_URL=http://auth-service:3001
+      - NOTIFICATION_SERVICE_URL=http://notification-service:3006
+      - SERVICE_API_KEY=f00d0rd3r1ngSyst3mS3rv1c3K3y2025
     networks:
-      - food-delivery-network
+      - app-network
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3002"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+   # Redis Service (for auth service token blacklisting)
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 10s
+      retries: 3
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   mongo:
     image: mongo:6
@@ -59,6 +138,7 @@ services:
 
 volumes:
   mongo-data:
+  redis_data:
 
 networks:
   food-delivery-network:
