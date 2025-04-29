@@ -22,8 +22,7 @@ const useAuth = () => {
   return context;
 };
 
-// Add a helper function to get the current authentication token
-// This can be used by other parts of the application to get the token consistently
+
 export const getAuthToken = () => {
   // Try to get token directly from localStorage
   let token = localStorage.getItem('token');

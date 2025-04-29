@@ -193,45 +193,13 @@ const FoodItemList = () => {
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <Button
-            variant="outlined"
-            color="secondary"
-            startIcon={<ArrowBackIcon />}
-            onClick={() => navigate('/restaurant')}
-            sx={{ mr: 2 }}
-          >
-            Back to Dashboard
-          </Button>
+          
           <Typography variant="h4" component="h1" gutterBottom>
             Food Items
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 2 }}>
-          <Button
-            variant="outlined"
-            color="secondary"
-            startIcon={<DebugIcon />}
-            onClick={async () => {
-              try {
-                await testTokenVerification();
-                await testAuthHeaders();
-                setSnackbar({
-                  open: true,
-                  message: 'Debug tests completed. Check console for results.',
-                  severity: 'info'
-                });
-              } catch (err) {
-                console.error('Debug tests failed:', err);
-                setSnackbar({
-                  open: true,
-                  message: 'Debug tests failed. Check console for details.',
-                  severity: 'error'
-                });
-              }
-            }}
-          >
-            Debug Auth
-          </Button>
+          
           <Button
             variant="contained"
             color="primary"

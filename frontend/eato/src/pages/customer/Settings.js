@@ -191,7 +191,7 @@ const Settings = () => {
     <CustomerLayout>
       <Box sx={{ py: 4 }}>
         <Typography variant="h4" gutterBottom>
-          Account Settings
+          Account Details
         </Typography>
         
         <Grid container spacing={4}>

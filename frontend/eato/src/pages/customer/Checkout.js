@@ -474,7 +474,7 @@ const OrderReview = ({ cart, handleQuantityChange, removeFromCart }) => {
   return (
     <Paper sx={{ p: 3, mb: 3, width: '100%', overflowX: 'hidden' }}>
       <Typography variant="h6" gutterBottom>
-        Review Your Order
+        Your Orders
       </Typography>
       
       {(!cart.items || cart.items.length === 0) ? (
