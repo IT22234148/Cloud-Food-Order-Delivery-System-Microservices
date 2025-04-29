@@ -1,11 +1,31 @@
+// controllers/foodItemController.js
 const FoodItem = require('../models/FoodItem');
+const Restaurant = require('../models/Restaurant');
 
 // @desc    Create a new food item
-// @route   POST /api/food-items
+// @route   POST /api/restaurants/:restaurantId/food-items
 // @access  Private (Restaurant Admin)
 const createFoodItem = async (req, res) => {
   try {
-    const { title, description, category, price, imageUrl } = req.body;
+    const { title, description, category, price, imageUrl, isAvailable } = req.body;
+    const { restaurantId } = req.params;
+    
+    // Verify restaurant exists
+    const restaurant = await Restaurant.findById(restaurantId);
+    if (!restaurant) {
+      return res.status(404).json({
+        success: false,
+        message: 'Restaurant not found'
+      });
+    }
+    
+    // Check if the user owns the restaurant
+    if (restaurant.ownerId.toString() !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to add food items to this restaurant'
+      });
+    }
     
     // Create new food item
     const foodItem = await FoodItem.create({
@@ -14,6 +34,8 @@ const createFoodItem = async (req, res) => {
       category,
       price: price || 0,
       imageUrl: imageUrl || '',
+      isAvailable: isAvailable !== undefined ? isAvailable : true,
+      restaurantId,
       createdBy: req.user.id // User ID from auth middleware
     });
     
@@ -40,12 +62,12 @@ const createFoodItem = async (req, res) => {
   }
 };
 
-// @desc    Get all food items - for restaurant admins
+// @desc    Get all food items across all restaurants - for admins
 // @route   GET /api/food-items
-// @access  Private (restaurant-admin)
-const getFoodItems = async (req, res) => {
+// @access  Private (Admin)
+const getAllFoodItems = async (req, res) => {
   try {
-    const foodItems = await FoodItem.find();
+    const foodItems = await FoodItem.find().populate('restaurantId', 'name');
     
     res.status(200).json({
       success: true,
@@ -61,12 +83,31 @@ const getFoodItems = async (req, res) => {
   }
 };
 
-// @desc    Get all food items - public endpoint for customers
-// @route   GET /api/food-items/public
-// @access  Public
-const getPublicFoodItems = async (req, res) => {
+// @desc    Get all food items for a restaurant - for restaurant admin
+// @route   GET /api/restaurants/:restaurantId/food-items/admin
+// @access  Private (Restaurant Admin)
+const getRestaurantFoodItemsAdmin = async (req, res) => {
   try {
-    const foodItems = await FoodItem.find();
+    const { restaurantId } = req.params;
+    
+    // Verify restaurant exists
+    const restaurant = await Restaurant.findById(restaurantId);
+    if (!restaurant) {
+      return res.status(404).json({
+        success: false,
+        message: 'Restaurant not found'
+      });
+    }
+    
+    // Check if the user owns the restaurant
+    if (restaurant.ownerId.toString() !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to view food items for this restaurant'
+      });
+    }
+    
+    const foodItems = await FoodItem.find({ restaurantId });
     
     res.status(200).json({
       success: true,
@@ -84,33 +125,18 @@ const getPublicFoodItems = async (req, res) => {
 
 // @desc    Get a single food item by ID
 // @route   GET /api/food-items/:id
-// @access  Private (Restaurant Admin)
+// @access  Public
 const getFoodItemById = async (req, res) => {
   try {
-    console.log('Getting food item by ID:', req.params.id);
-    console.log('User ID from token:', req.user.id);
-    
-    const foodItem = await FoodItem.findById(req.params.id);
+    const foodItem = await FoodItem.findById(req.params.id)
+      .populate('restaurantId', 'name address phoneNumber');
     
     if (!foodItem) {
-      console.log('Food item not found');
       return res.status(404).json({
         success: false,
         message: 'Food item not found'
       });
     }
-    
-    console.log('Food item found:', foodItem);
-    
-    // Check if food item belongs to the authenticated user
-    // Only apply this check in production, for debugging purposes leave it out temporarily
-    // if (foodItem.createdBy.toString() !== req.user.id) {
-    //   console.log('User not authorized, item belongs to:', foodItem.createdBy);
-    //   return res.status(403).json({
-    //     success: false,
-    //     message: 'Not authorized to access this food item'
-    //   });
-    // }
     
     res.status(200).json({
       success: true,
@@ -140,9 +166,6 @@ const getFoodItemById = async (req, res) => {
 // @access  Private (Restaurant Admin)
 const updateFoodItem = async (req, res) => {
   try {
-    console.log('Updating food item:', req.params.id);
-    console.log('Update data:', req.body);
-    
     let foodItem = await FoodItem.findById(req.params.id);
     
     if (!foodItem) {
@@ -152,14 +175,22 @@ const updateFoodItem = async (req, res) => {
       });
     }
     
-    // Check if food item belongs to the authenticated user
-    // Temporarily disable this check for debugging
-    // if (foodItem.createdBy.toString() !== req.user.id) {
-    //   return res.status(403).json({
-    //     success: false,
-    //     message: 'Not authorized to update this food item'
-    //   });
-    // }
+    // Get the restaurant to check ownership
+    const restaurant = await Restaurant.findById(foodItem.restaurantId);
+    if (!restaurant) {
+      return res.status(404).json({
+        success: false,
+        message: 'Associated restaurant not found'
+      });
+    }
+    
+    // Check if restaurant belongs to the authenticated user
+    if (restaurant.ownerId.toString() !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to update this food item'
+      });
+    }
     
     // Update food item
     foodItem = await FoodItem.findByIdAndUpdate(
@@ -168,15 +199,12 @@ const updateFoodItem = async (req, res) => {
       { new: true, runValidators: true }
     );
     
-    console.log('Food item updated successfully:', foodItem);
-    
     res.status(200).json({
       success: true,
       data: foodItem
     });
   } catch (error) {
     console.error('Error updating food item:', error.message);
-    
     // Handle validation errors
     if (error.name === 'ValidationError') {
       const messages = Object.values(error.errors).map(err => err.message);
@@ -216,8 +244,17 @@ const deleteFoodItem = async (req, res) => {
       });
     }
     
-    // Check if food item belongs to the authenticated user
-    if (foodItem.createdBy.toString() !== req.user.id) {
+    // Get the restaurant to check ownership
+    const restaurant = await Restaurant.findById(foodItem.restaurantId);
+    if (!restaurant) {
+      return res.status(404).json({
+        success: false,
+        message: 'Associated restaurant not found'
+      });
+    }
+    
+    // Check if restaurant belongs to the authenticated user
+    if (restaurant.ownerId.toString() !== req.user.id) {
       return res.status(403).json({
         success: false,
         message: 'Not authorized to delete this food item'
@@ -239,11 +276,34 @@ const deleteFoodItem = async (req, res) => {
   }
 };
 
+// @desc    Get all public food items across all restaurants
+// @route   GET /api/food-items/public
+// @access  Public
+const getPublicFoodItems = async (req, res) => {
+  try {
+    const foodItems = await FoodItem.find({ isAvailable: true })
+      .populate('restaurantId', 'name imageUrl');
+    
+    res.status(200).json({
+      success: true,
+      count: foodItems.length,
+      data: foodItems
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
 module.exports = {
   createFoodItem,
-  getFoodItems,
-  getPublicFoodItems,
+  getAllFoodItems,
+  getRestaurantFoodItemsAdmin,
   getFoodItemById,
   updateFoodItem,
-  deleteFoodItem
-}; 
+  deleteFoodItem,
+  getPublicFoodItems
+};

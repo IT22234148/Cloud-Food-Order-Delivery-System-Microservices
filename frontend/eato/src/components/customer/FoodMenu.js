@@ -280,7 +280,7 @@ const FoodMenu = () => {
       {/* Menu header and filtering */}
       <Box sx={{ mb: 4, mt: 2 }}>
         <Typography variant="h4" component="h1" gutterBottom>
-          Our Menu
+          Menus
         </Typography>
         
         <Grid container spacing={2} sx={{ mb: 3 }}>
