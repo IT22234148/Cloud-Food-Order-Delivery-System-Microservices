@@ -2,16 +2,50 @@ version: '3.8'
 
 services:
   auth-service:
-    build: ./services/auth-service
+    build: ../Backend/auth-service
     container_name: auth-service
     ports:
       - "5000:5000"
     environment:
-      - MONGO_URI=mongodb://mongo:27017/authdb
+      - MONGO_URI=mongodb://mongo:27017/fooddelivery
       - JWT_SECRET=supersecretkey
       - JWT_EXPIRES_IN=1d
     depends_on:
       - mongo
+    networks:
+      - food-delivery-network
+
+  restaurant-service:
+    build: ../Backend/restaurant-management-service
+    container_name: restaurant-service
+    ports:
+      - "5001:5001"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/fooddelivery
+      - JWT_SECRET=supersecretkey
+      - AUTH_SERVICE_URL=http://auth-service:5000/api/auth
+    depends_on:
+      - mongo
+      - auth-service
+    networks:
+      - food-delivery-network
+
+  order-service:
+    build: ../Backend/order-management-service
+    container_name: order-service
+    ports:
+      - "5002:5002"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/fooddelivery
+      - JWT_SECRET=supersecretkey
+      - RESTAURANT_SERVICE_URL=http://restaurant-service:5001/api/restaurants
+      - PAYMENT_SERVICE_URL=http://payment-service:5003/api/payments
+    depends_on:
+      - mongo
+      - auth-service
+      - restaurant-service
+    networks:
+      - food-delivery-network
 
   mongo:
     image: mongo:6
@@ -20,6 +54,12 @@ services:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
+    networks:
+      - food-delivery-network
 
 volumes:
   mongo-data:
+
+networks:
+  food-delivery-network:
+    driver: bridge
