@@ -25,7 +25,7 @@ function LoginForm() {
       {/* Left Panel */}
       <div style={styles.left}>
         <img
-          src="/burgart.png"
+          src="/foods2.png"
           alt="Burger Visual"
           style={styles.burgerImg}
         />

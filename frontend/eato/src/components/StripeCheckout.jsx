@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import { loadStripe } from '@stripe/stripe-js';
 import {
-  CardElement,
   Elements,
   useStripe,
   useElements,
+  CardNumberElement,
+  CardExpiryElement,
+  CardCvcElement,
 } from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
+import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 
-const stripePromise = loadStripe('pk_test_51Q8MeRRq87H6ul5NCn0Cv5v7vNptuZzndXYhNFKCiwIZDZkyO7GozjBapuzbGOj5cigIqWEHrv6D6oDjKPEMACxE00J6iMPHN8'); // replace with your Stripe public key
+const stripePromise = loadStripe('pk_test_51Q8MeRRq87H6ul5NCn0Cv5v7vNptuZzndXYhNFKCiwIZDZkyO7GozjBapuzbGOj5cigIqWEHrv6D6oDjKPEMACxE00J6iMPHN8'); // Replace with your Stripe public key
 
 const PaymentForm = ({ orderId, amount }) => {
   const stripe = useStripe();
@@ -19,7 +21,6 @@ const PaymentForm = ({ orderId, amount }) => {
   const [userName, setUserName] = useState('');
 
   useEffect(() => {
-    // Get user name from JWT
     const token = localStorage.getItem('token');
     if (token) {
       const decoded = jwtDecode(token);
@@ -51,16 +52,25 @@ const PaymentForm = ({ orderId, amount }) => {
     e.preventDefault();
     if (!stripe || !elements) return;
 
-    const result = await stripe.confirmCardPayment(clientSecret, {
-      payment_method: {
-        card: elements.getElement(CardElement),
-      },
+    const cardNumberElement = elements.getElement(CardNumberElement);
+    const cardExpiryElement = elements.getElement(CardExpiryElement);
+    const cardCvcElement = elements.getElement(CardCvcElement);
+
+    const { error, paymentMethod } = await stripe.createPaymentMethod({
+      type: 'card',
+      card: cardNumberElement,
     });
 
-    if (result.error) {
-      setMessage(`Payment failed: ${result.error.message}`);
+    if (error) {
+      setMessage(error.message);
     } else {
-      if (result.paymentIntent.status === 'succeeded') {
+      const result = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: paymentMethod.id,
+      });
+
+      if (result.error) {
+        setMessage(`Payment failed: ${result.error.message}`);
+      } else if (result.paymentIntent.status === 'succeeded') {
         setMessage('🎉 Payment successful!');
         await axios.post(
           'http://localhost:5002/api/payment/confirm',
@@ -77,21 +87,58 @@ const PaymentForm = ({ orderId, amount }) => {
 
   return (
     <div style={styles.wrapper}>
-      <div style={styles.card}>
-        <h2 style={styles.title}>Hello, {userName} 👋</h2>
-        <p style={styles.subtitle}>You're paying <span style={styles.amount}>LKR {amount}</span> for your order</p>
+      <div style={styles.container}>
 
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <div style={styles.inputBox}>
-            <CardElement />
+        {/* Left Side */}
+        <div style={styles.left}>
+          <h2 style={styles.brand}><span style={{ color: '#fff' }}>Your Payment</span></h2>
+          <h1 style={styles.amount}>LKR {amount}</h1>
+          <p style={styles.userInfo}>Logged in as: {userName}</p>
+        </div>
+
+        {/* Right Side */}
+        <div style={styles.right}>
+          <h2 style={styles.title}>Select Payment Method</h2>
+
+          <div style={styles.icons}>
+            <img src="https://img.icons8.com/color/48/visa.png" alt="visa" style={styles.icon} />
+            <img src="https://img.icons8.com/color/48/mastercard.png" alt="mastercard" style={styles.icon} />
+            <img src="https://img.icons8.com/ios-filled/48/apple-pay.png" alt="applepay" style={styles.icon} />
+            <img src="https://img.icons8.com/color/48/paypal.png" alt="paypal" style={styles.icon} />
           </div>
 
-          <button type="submit" style={styles.button} disabled={!stripe || !clientSecret}>
-            Pay Securely
-          </button>
-        </form>
+          <form onSubmit={handleSubmit} style={styles.form}>
+            <div style={styles.input}>
+              <CardNumberElement options={{ style: styles.stripeInput }} />
+            </div>
+            <input
+              type="text"
+              placeholder="Cardholder Name"
+              style={{ ...styles.input, padding: '14px' }}
+              required
+            />
+            <div style={styles.row}>
+              <div style={{ ...styles.input, width: '45%', marginRight: '10px' }}>
+                <CardExpiryElement options={{ style: styles.stripeInput }} />
+              </div>
+              <div style={{ ...styles.input, width: '45%', marginLeft: '10px' }}>
+                <CardCvcElement options={{ style: styles.stripeInput }} />
+              </div>
+            </div>
 
-        {message && <p style={styles.message}>{message}</p>}
+            <div style={styles.checkbox}>
+              <input type="checkbox" id="saveCard" />
+              <label htmlFor="saveCard" style={{ marginLeft: '8px', fontSize: '0.9rem' }}>Save card details for future use</label>
+            </div>
+
+            <button type="submit" style={styles.payButton}>
+              Pay now →
+            </button>
+
+            {message && <p style={styles.success}>{message}</p>}
+          </form>
+        </div>
+
       </div>
     </div>
   );
@@ -105,62 +152,129 @@ const StripeCheckout = ({ orderId, amount }) => (
 
 export default StripeCheckout;
 
+// Internal CSS styles
 const styles = {
   wrapper: {
+    minHeight: '100vh',
+    background: '#ECE7DA',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    height: '100vh',
-    background: 'linear-gradient(135deg, #f8f9fa, #e0e0ff)',
+    padding: '2rem',
   },
-  card: {
+  container: {
+    display: 'flex',
+    maxWidth: '950px',
     width: '100%',
-    maxWidth: '420px',
-    padding: '30px',
     backgroundColor: '#ffffff',
     borderRadius: '16px',
-    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-    textAlign: 'center',
+    boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+    overflow: 'hidden',
+    border: '1px solid #e0e0e0',
   },
-  title: {
-    marginBottom: '0.5rem',
-    fontSize: '1.6rem',
-    color: '#333',
+  left: {
+    width: '40%',
+    backgroundColor: '#FF4F00',
+    padding: '2rem',
+    color: '#fff',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderTopLeftRadius: '16px',
+    borderBottomLeftRadius: '16px',
   },
-  subtitle: {
-    marginBottom: '1.5rem',
-    fontSize: '1rem',
-    color: '#666',
+  brand: {
+    fontSize: '2.4rem',
+    marginBottom: '1rem',
+    fontWeight: '700',
   },
   amount: {
-    color: '#6c63ff',
-    fontWeight: 'bold',
+    fontSize: '3rem',
+    marginBottom: '1rem',
+    fontWeight: '600',
+  },
+  userInfo: {
+    fontSize: '1.2rem',
+    opacity: 0.8,
+  },
+  right: {
+    width: '60%',
+    padding: '2.5rem 3rem',
+    backgroundColor: '#fff',
+    borderTopRightRadius: '16px',
+    borderBottomRightRadius: '16px',
+  },
+  title: {
+    fontSize: '1.8rem',
+    marginBottom: '1.5rem',
+    fontWeight: '600',
+    color: '#333',
+  },
+  icons: {
+    display: 'flex',
+    gap: '1.2rem',
+    marginBottom: '2rem',
+  },
+  icon: {
+    width: '50px',
+    objectFit: 'contain',
   },
   form: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '1.2rem',
+    gap: '1.5rem',
   },
-  inputBox: {
+  input: {
     border: '1px solid #ddd',
-    padding: '12px',
-    borderRadius: '8px',
-    backgroundColor: '#fafafa',
-  },
-  button: {
-    padding: '12px',
-    border: 'none',
-    borderRadius: '8px',
-    backgroundColor: '#6c63ff',
-    color: '#fff',
-    fontWeight: 'bold',
-    cursor: 'pointer',
+    borderRadius: '12px',
+    backgroundColor: '#f9f9f9',
+    padding: '14px',
     fontSize: '1rem',
-    transition: 'all 0.3s ease',
+    transition: 'border 0.3s',
   },
-  message: {
+  inputFocus: {
+    border: '1px solid #4e73df',
+  },
+  row: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    gap: '1.5rem',
+  },
+  stripeInput: {
+    base: {
+      fontSize: '16px',
+      color: '#333',
+      '::placeholder': {
+        color: '#aaa',
+      },
+    },
+  },
+  checkbox: {
+    display: 'flex',
+    alignItems: 'center',
+    marginTop: '1rem',
+  },
+  payButton: {
+    padding: '16px',
+    borderRadius: '12px',
+    border: 'none',
+    backgroundColor: '#FF4F00',
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: '1.2rem',
+    cursor: 'pointer',
+    transition: 'background-color 0.3s',
+    width: '100%',
+  },
+  payButtonHover: {
+    backgroundColor: '#2e5bc3',
+  },
+  success: {
     marginTop: '1rem',
     color: '#28a745',
     fontWeight: 'bold',
+    fontSize: '1rem',
   },
 };
+

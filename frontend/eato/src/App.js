@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import RegisterPage from "./pages/RegisterPage";
 import LoginPage from "./pages/LoginPage";
@@ -13,32 +12,32 @@ import UnauthorizedPage from './pages/UnauthorizedPage';
 import ManageMenuItems from './pages/menu/ManageMenuItems';
 import AddMenuItem from './pages/menu/AddMenuItem';
 import EditMenuItem from './pages/menu/EditMenuItem';
-import MenuItemList from './pages/menu/MenuItemList'; // For public view
+import MenuItemList from './pages/menu/MenuItemList';
 import CustomerRestaurantList from './pages/restaurant/CustomerRestaurantList';
+import CashOnDelivery from "./pages/CashOnDelivery";
+import PaymentPage from './pages/PaymentPage';
+import AdminPaymentList from "./components/AdminPaymentList";
 
 function App() {
   return (
     <Router>
       <AuthProvider>
         <Routes>
+          {/* Public Routes */}
           <Route path="/register" element={<RegisterPage />} />
-          <Route path="/login" element={<LoginPage />} />
+          <Route path="/" element={<LoginPage />} />
           <Route path="/unauthorized" element={<UnauthorizedPage />} />
-
-
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/payment" element={<StripeCheckout />} />
-      </Routes>
-
-          {/* Public route for all customers to see restaurants */}
+          <Route path="/paymentcard" element={<StripeCheckout />} />
+          <Route path="/payment/cod" element={<CashOnDelivery />} />
           <Route path="/restaurants" element={<CustomerRestaurantList />} />
+          <Route path="/restaurant/:restaurantId/menu" element={<MenuItemList />} />
+          {/* <PaymentPage orderId="ORD999" amount={2500} /> */}
+          <Route path="/paymentchoose" element={<PaymentPage orderId="ORD999" amount={2500}  />} />
+          {/* <Route path="/paylist" element={<AdminPaymentList />} /> */}
 
 
-          <Route path="/" element={<ProtectedRoute />}>
-            
-
+          {/* Protected Routes */}
+          <Route element={<ProtectedRoute />}>
             {/* Restaurant Routes */}
             <Route path="/restaurant/dashboard" element={<RestaurantDashboard />} />
             <Route path="/restaurant/add" element={<AddRestaurant />} />
@@ -50,14 +49,11 @@ function App() {
 
           {/* Admin Routes */}
           <Route
-            path="/admin/restaurants"
             element={<ProtectedRoute allowedRoles={['admin']} />}
           >
-            <Route index element={<RestaurantListAdmin />} />
+            <Route path="/admin/restaurants" element={<RestaurantListAdmin />} />
+            <Route path="/paylist" element={<AdminPaymentList />} />
           </Route>
-
-          {/* Public Route for viewing menu by restaurant */}
-          <Route path="/restaurant/:restaurantId/menu" element={<MenuItemList />} />
         </Routes>
       </AuthProvider>
     </Router>

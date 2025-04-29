@@ -1,6 +1,18 @@
 const Payment = require('../models/Payment');
 const { createStripePaymentIntent } = require('../services/stripeService');
 
+
+// Get all payments (Admin)
+exports.getAllPayments = async (req, res) => {
+  try {
+    const payments = await Payment.find().sort({ createdAt: -1 });
+    res.status(200).json(payments);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: 'Failed to fetch payments' });
+  }
+};
+
 // Card payment
 exports.initiateCardPayment = async (req, res) => {
   const { orderId, amount } = req.body;
@@ -50,7 +62,7 @@ exports.initiateCOD = async (req, res) => {
   }
 };
 
-// Confirm payment success (Stripe webhook will call this eventually in real)
+
 exports.confirmCardPayment = async (req, res) => {
   const { paymentIntentId } = req.body;
   const userId = req.user.id;
@@ -62,11 +74,53 @@ exports.confirmCardPayment = async (req, res) => {
     payment.status = 'paid';
     await payment.save();
 
-    // Optional: Notify order-service or notification-service
-
     res.status(200).json({ msg: 'Payment confirmed successfully' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ msg: 'Failed to confirm payment' });
   }
 };
+
+
+exports.updatePaymentStatus = async (req, res) => {
+  const { status } = req.body;
+  const paymentId = req.params.id;
+
+  try {
+    const payment = await Payment.findById(paymentId);
+
+    if (!payment) {
+      return res.status(404).json({ msg: 'Payment not found' });
+    }
+
+    payment.status = status;
+    await payment.save();
+
+    res.status(200).json({ msg: 'Payment status updated successfully', payment });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: 'Failed to update payment status' });
+  }
+};
+
+exports.deletePayment = async (req, res) => {
+  const paymentId = req.params.id;
+
+  try {
+    const payment = await Payment.findByIdAndDelete(paymentId);
+
+    if (!payment) {
+      return res.status(404).json({ msg: 'Payment not found' });
+    }
+
+    res.status(200).json({ msg: 'Payment deleted successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: 'Failed to delete payment' });
+  }
+};
+
+
+
+
+

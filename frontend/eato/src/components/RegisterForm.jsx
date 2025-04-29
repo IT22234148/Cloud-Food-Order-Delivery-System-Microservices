@@ -52,7 +52,7 @@ function RegisterForm() {
       {/* Left Panel */}
       <div style={{ ...styles.left, height: isMobile ? "40vh" : "100vh" }}>
         <img
-          src="/burgart.png" // Make sure this image path is valid
+          src="/foods2.png" // Make sure this image path is valid
           alt="Burger Visual"
           style={isMobile ? styles.burgerImgMobile : styles.burgerImg}
         />
@@ -112,7 +112,7 @@ function RegisterForm() {
           <button type="submit" style={styles.submitBtn}>Sign up</button>
         </form>
         <p style={styles.loginText}>
-          Already have an account? <a href="/login" style={styles.loginLink}>Sign in Here</a>
+          Already have an account? <a href="/" style={styles.loginLink}>Sign in Here</a>
         </p>
         {msg && <p>{msg}</p>}
       </div>
