@@ -5,6 +5,7 @@ import API from "../api";
 function LoginForm() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [msg, setMsg] = useState("");
+  const navigate = useNavigate();
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -14,26 +15,22 @@ function LoginForm() {
     try {
       const res = await API.post("/login", form);
       localStorage.setItem("token", res.data.token);
-      setMsg("Login successful!");
+      setMsg("✅ Login successful!");
+      navigate("/home");
     } catch (err) {
-      setMsg(err.response?.data?.msg || "Login failed.");
+      setMsg(err.response?.data?.msg || "❌ Login failed.");
     }
   };
-  const navigate = useNavigate(); // 👈 Initialize navigation
+
   return (
     <div style={styles.container}>
-      {/* Left Panel */}
       <div style={styles.left}>
-        <img
-          src="/foods2.png"
-          alt="Burger Visual"
-          style={styles.burgerImg}
-        />
+        <img src="/logimg.jpg" alt="Burger" style={styles.burgerImg} />
       </div>
 
-      {/* Right Panel */}
       <div style={styles.right}>
         <h2 style={styles.title}>Welcome back</h2>
+
         <form onSubmit={handleSubmit} style={styles.form}>
           <input
             type="email"
@@ -63,7 +60,7 @@ function LoginForm() {
           </button>
         </form>
 
-        <p style={{ marginTop: "20px" }}>or</p>
+        <div style={styles.orDivider}>or</div>
 
         <button style={styles.googleBtn}>
           <img
@@ -76,12 +73,16 @@ function LoginForm() {
 
         <p style={styles.registerText}>
           New here?{" "}
-          <a href="/register" style={styles.registerLink} onClick={()=> navigate("/RegisterPage")}>
+          <a
+            href="/register"
+            style={styles.registerLink}
+            onClick={() => navigate("/RegisterPage")}
+          >
             Create Account
           </a>
         </p>
 
-        {msg && <p>{msg}</p>}
+        {msg && <p style={styles.message}>{msg}</p>}
       </div>
     </div>
   );
@@ -91,7 +92,7 @@ const styles = {
   container: {
     display: "flex",
     height: "100vh",
-    fontFamily: "sans-serif",
+    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
   },
   left: {
     flex: 1,
@@ -101,8 +102,8 @@ const styles = {
     justifyContent: "center",
   },
   burgerImg: {
-    width: "80%",
-    maxHeight: "90%",
+    width: "98%",
+    maxHeight: "190%",
     objectFit: "contain",
   },
   right: {
@@ -112,20 +113,24 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
+    alignItems: "center",
   },
   title: {
     fontSize: "28px",
     marginBottom: "30px",
-    textAlign: "left",
+    color: "#333",
   },
   form: {
     display: "flex",
     flexDirection: "column",
+    alignItems: "center",
     gap: "16px",
+    width: "100%",
   },
   input: {
-    padding: "12px 14px",
-    fontSize: "16px",
+    width: "280px",
+    padding: "10px 12px",
+    fontSize: "14px",
     borderRadius: "6px",
     border: "1px solid #ccc",
     backgroundColor: "#F1EBE5",
@@ -134,33 +139,44 @@ const styles = {
     display: "flex",
     justifyContent: "flex-end",
     fontSize: "12px",
-    marginTop: "-10px",
-    marginBottom: "10px",
+    width: "280px",
+    marginTop: "-8px",
+    marginBottom: "12px",
   },
   forgot: {
-    color: "#888",
+    color: "#555",
     textDecoration: "none",
+    fontWeight: "500",
   },
   submitBtn: {
+    width: "280px",
     backgroundColor: "#FF4F00",
     color: "#fff",
     border: "none",
     borderRadius: "6px",
-    padding: "12px",
-    fontSize: "16px",
+    padding: "10px",
+    fontSize: "14px",
     cursor: "pointer",
   },
-  googleBtn: {
+  orDivider: {
+    textAlign: "center",
     marginTop: "20px",
+    fontSize: "14px",
+    color: "#888",
+  },
+  googleBtn: {
+    width: "280px",
     backgroundColor: "#fff",
     border: "1px solid #ccc",
     padding: "10px 20px",
     borderRadius: "6px",
-    display: "inline-flex",
+    display: "flex",
     alignItems: "center",
+    justifyContent: "center",
     gap: "10px",
     cursor: "pointer",
     fontSize: "14px",
+    marginTop: "16px",
   },
   googleIcon: {
     width: "18px",
@@ -174,6 +190,13 @@ const styles = {
     color: "#FF4F00",
     fontWeight: "bold",
     textDecoration: "none",
+    marginLeft: "4px",
+  },
+  message: {
+    marginTop: "20px",
+    fontSize: "14px",
+    fontWeight: "600",
+    color: "#d9534f",
   },
 };
 

@@ -17,6 +17,7 @@ import CustomerRestaurantList from './pages/restaurant/CustomerRestaurantList';
 import CashOnDelivery from "./pages/CashOnDelivery";
 import PaymentPage from './pages/PaymentPage';
 import AdminPaymentList from "./components/AdminPaymentList";
+import HomePage from "./pages/HomePage";
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
           {/* Public Routes */}
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/" element={<LoginPage />} />
+          <Route path="/home" element={<HomePage />} />
           <Route path="/unauthorized" element={<UnauthorizedPage />} />
           <Route path="/paymentcard" element={<StripeCheckout />} />
           <Route path="/payment/cod" element={<CashOnDelivery />} />

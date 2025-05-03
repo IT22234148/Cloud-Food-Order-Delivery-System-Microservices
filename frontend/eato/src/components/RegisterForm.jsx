@@ -12,6 +12,7 @@ function RegisterForm() {
   });
   const [msg, setMsg] = useState("");
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -26,14 +27,37 @@ function RegisterForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Name validation
+    if (!/^[A-Za-z ]{3,}$/.test(form.name)) {
+      setMsg("Name must be at least 3 characters long and contain only letters and spaces.");
+      return;
+    }
+
+    // Email validation
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      setMsg("Please enter a valid email address.");
+      return;
+    }
+
+    // Password strength validation
+    if (!/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/.test(form.password)) {
+      setMsg("Password must be at least 6 characters and include both letters and numbers.");
+      return;
+    }
+
+    // Confirm password match
     if (form.password !== form.confirmPassword) {
       setMsg("Passwords do not match.");
       return;
     }
+
+    // Terms and conditions
     if (!form.agreed) {
       setMsg("You must agree to the terms and conditions.");
       return;
     }
+
     try {
       await API.post("/register", {
         username: form.name,
@@ -41,18 +65,19 @@ function RegisterForm() {
         password: form.password,
       });
       setMsg("Registration successful!");
+      // Optional: navigate to login
+      // navigate("/login");
     } catch (err) {
       setMsg(err.response?.data?.msg || "Registration failed.");
     }
   };
-  const navigate = useNavigate(); // 👈 Initialize navigation
 
   return (
     <div style={{ ...styles.container, flexDirection: isMobile ? "column" : "row" }}>
       {/* Left Panel */}
       <div style={{ ...styles.left, height: isMobile ? "40vh" : "100vh" }}>
         <img
-          src="/foods2.png" // Make sure this image path is valid
+          src="/logimg.jpg"
           alt="Burger Visual"
           style={isMobile ? styles.burgerImgMobile : styles.burgerImg}
         />
@@ -124,8 +149,7 @@ const styles = {
   container: {
     display: "flex",
     height: "100vh",
-    width: "100%",
-    fontFamily: "sans-serif",
+    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
   },
   left: {
     flex: 1,
@@ -135,7 +159,7 @@ const styles = {
     justifyContent: "center",
   },
   burgerImg: {
-    width: "80%",
+    width: "98%",
     height: "auto",
     objectFit: "contain",
   },
@@ -154,16 +178,19 @@ const styles = {
   title: {
     fontSize: "28px",
     marginBottom: "30px",
-    textAlign: "left",
+    color: "#333",
   },
   form: {
     display: "flex",
     flexDirection: "column",
+    alignItems: "center",
     gap: "16px",
+    width: "100%",
   },
   input: {
-    padding: "12px 14px",
-    fontSize: "16px",
+    width: "280px",
+    padding: "10px 12px",
+    fontSize: "14px",
     borderRadius: "6px",
     border: "1px solid #ccc",
     backgroundColor: "#F1EBE5",
@@ -179,14 +206,14 @@ const styles = {
     height: "16px",
   },
   submitBtn: {
+    width: "280px",
     backgroundColor: "#FF4F00",
     color: "#fff",
     border: "none",
     borderRadius: "6px",
-    padding: "12px",
-    fontSize: "16px",
+    padding: "10px",
+    fontSize: "14px",
     cursor: "pointer",
-    marginTop: "10px",
   },
   loginText: {
     marginTop: "24px",
